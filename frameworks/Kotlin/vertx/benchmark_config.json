@@ -1,5 +1,5 @@
 {
-  "framework": "vertx",
+  "framework": "vertx-kotlin",
   "tests": [{
     "default": {
       "json_url": "/json",
@@ -9,7 +9,7 @@
       "classification": "Platform",
       "database": "None",
       "framework": "None",
-      "language": "Java",
+      "language": "Kotlin",
       "flavor": "None",
       "orm": "Raw",
       "platform": "Vert.x",
@@ -20,28 +20,7 @@
       "notes": "",
       "versus": ""
     },
-    "postgres": {
-      "db_url": "/db",
-      "query_url": "/queries?queries=",
-      "fortune_url": "/fortunes",
-      "update_url": "/updates?queries=",
-      "port": 8080,
-      "approach": "Realistic",
-      "classification": "Platform",
-      "database": "Postgres",
-      "framework": "None",
-      "language": "Java",
-      "flavor": "None",
-      "orm": "Raw",
-      "platform": "Vert.x",
-      "webserver": "None",
-      "os": "Linux",
-      "database_os": "Linux",
-      "display_name": "vertx-postgres",
-      "notes": "",
-      "versus": ""
-    },
-    "rxjava2-jdbc-mysql": {
+    "rxjava2-jasync-mysql": {
       "db_url": "/db",
       "query_url": "/queries?queries=",
       "fortune_url": "/fortunes",

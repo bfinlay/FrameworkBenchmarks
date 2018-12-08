@@ -1,6 +1,6 @@
 {
   "host": "tfb-database",
-  "host-d": "localhost",
+  "host-dev": "localhost",
   "username": "benchmarkdbuser",
   "password": "benchmarkdbpass",
   "database": "hello_world",
