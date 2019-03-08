@@ -19,6 +19,7 @@ CMD export DBIP=`getent hosts tfb-database | awk '{ print $1 }'` && \
       -Dvertx.threadChecks=false \
       -Dvertx.disableContextTimings=true \
       -Dvertx.disableTCCL=true \
+      -Dvertx.disableHttpHeadersValidation=true \
 #      -Djava.util.logging.config.file="src/main/resources/logging.properties" \
       -jar \
       target/vertx.benchmark-0.0.1-SNAPSHOT-fat.jar \

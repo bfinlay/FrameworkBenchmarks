@@ -37,7 +37,7 @@
       "webserver": "None",
       "os": "Linux",
       "database_os": "Linux",
-      "display_name": "vertx-rxjava2-jdbc-mysql",
+      "display_name": "vertx-rxjava2-jasync-mysql",
       "notes": "",
       "versus": ""
     }
