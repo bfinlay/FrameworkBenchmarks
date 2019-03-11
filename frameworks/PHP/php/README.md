@@ -40,7 +40,7 @@ and the query builder without the overhead of the Eloquent ORM models.
 * php-eloquent: uses the [Laravel Eloquent ORM](https://laravel.com/docs/5.8/eloquent) which is built on top of the
 Laravel query builder.  This tests the incremental overhead of the Eloquent ORM models.
 
-These tests measure overhead compared to a PHP-PDO implementation.  Comparing these tests to the Laravel framework results
+These tests measure overhead compared to a PHP-PDO implementation.  However, comparing these tests to the Laravel framework results
 also illustrates the overhead of the Laravel frontend components relative to the backend components. 
 
 [Brion Finlay](https://github.com/bfinlay)

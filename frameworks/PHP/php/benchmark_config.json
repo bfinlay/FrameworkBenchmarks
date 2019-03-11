@@ -256,6 +256,44 @@
       "display_name": "PHP-Eloquent",
       "notes": "",
       "versus": "php"
+    },
+    "hydrahon": {
+      "db_url": "/db-hydrahon.php",
+      "query_url": "/db-hydrahon.php?queries=",
+      "port": 8080,
+      "approach": "Realistic",
+      "classification": "Platform",
+      "database": "MySQL",
+      "framework": "None",
+      "language": "PHP",
+      "flavor": "PHP7",
+      "orm": "Full",
+      "platform": "None",
+      "webserver": "nginx",
+      "os": "Linux",
+      "database_os": "Linux",
+      "display_name": "PHP-hydrahon",
+      "notes": "",
+      "versus": "php"
+    },
+    "pixie": {
+      "db_url": "/db-pixie.php",
+      "query_url": "/db-pixie.php?queries=",
+      "port": 8080,
+      "approach": "Realistic",
+      "classification": "Platform",
+      "database": "MySQL",
+      "framework": "None",
+      "language": "PHP",
+      "flavor": "PHP7",
+      "orm": "Full",
+      "platform": "None",
+      "webserver": "nginx",
+      "os": "Linux",
+      "database_os": "Linux",
+      "display_name": "PHP-pixie",
+      "notes": "",
+      "versus": "php"
     }
   }]
 }

@@ -1,0 +1,5 @@
+{
+  "require": {
+    "pecee/pixie": "4.11.0"
+  }
+}
