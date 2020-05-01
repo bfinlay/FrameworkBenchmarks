@@ -1,17 +1,20 @@
 <?php
 namespace controllers;
 
-use Ubiquity\controllers\Controller;
-use Ubiquity\utils\http\UResponse;
-
 /**
  * Json controller.
- **/
-class Json extends Controller{
+ */
+class Json extends \Ubiquity\controllers\Controller {
+
+	public function __construct() {}
+
 	public function initialize() {
-		UResponse::setContentType( 'application/json' );
+		\header('Content-Type: application/json');
 	}
-	public function index(){
-		echo \json_encode(['message' => 'Hello, World!']);
+
+	public function index() {
+		echo \json_encode([
+			'message' => 'Hello, World!'
+		]);
 	}
 }

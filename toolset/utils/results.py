@@ -336,6 +336,7 @@ class Results:
         toRet['succeeded'] = self.succeeded
         toRet['failed'] = self.failed
         toRet['verify'] = self.verify
+        toRet['testMetadata'] = self.benchmarker.metadata.to_jsonable()
 
         return toRet
 
@@ -461,8 +462,8 @@ class Results:
         stats_file = self.get_stats_file(framework_test.name, test_type)
         with open(stats_file) as stats:
             # dstat doesn't output a completely compliant CSV file - we need to strip the header
-            while stats.next() != "\n":
-                pass
+            for _ in range(4):
+                stats.next()
             stats_reader = csv.reader(stats)
             main_header = stats_reader.next()
             sub_header = stats_reader.next()

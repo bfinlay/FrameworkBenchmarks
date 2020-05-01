@@ -1,6 +1,6 @@
 {
 	"require" : {
-		"php" : "^7.1",
+		"php" : "^7.4",
 		"phpmv/ubiquity" : "dev-master"
 	},
 	"require-dev" : {
@@ -11,5 +11,7 @@
 		"psr-4" : {
 			"" : "app/"
 		}
-	}
+	},
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }

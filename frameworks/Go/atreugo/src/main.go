@@ -2,66 +2,72 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
-	"net"
 	"runtime"
-
-	"github.com/savsgio/atreugo/v7"
 
 	"atreugo/src/handlers"
 	"atreugo/src/storage"
-	"atreugo/src/templates"
+
+	"github.com/savsgio/atreugo/v11"
+	fastprefork "github.com/valyala/fasthttp/prefork"
 )
 
-func initPools() {
-	handlers.InitMessagePool()
-	templates.InitFortunesPool()
-	storage.InitWorldPool()
-	storage.InitWorldsPool()
+var bindHost, jsonEncoder, dbDriver, dbConnectionString string
+var prefork bool
+
+func init() {
+	// init flags
+	flag.StringVar(&bindHost, "bind", ":8080", "set bind host")
+	flag.BoolVar(&prefork, "prefork", false, "use prefork")
+	flag.StringVar(&jsonEncoder, "json_encoder", "none", "json encoder: none, easyjson or sjson")
+	flag.StringVar(&dbDriver, "db", "none", "db connection driver [values: none or pgx or mongo]")
+	flag.StringVar(&dbConnectionString, "db_connection_string", "", "db connection string")
+
+	flag.Parse()
+}
+
+func numCPU() int {
+	n := runtime.NumCPU()
+	if n == 0 {
+		n = 8
+	}
+
+	return n
 }
 
 func main() {
-	initPools()
+	maxConn := numCPU() * 4
+	if fastprefork.IsChild() {
+		maxConn = numCPU()
+	}
 
-	// init flags
-	bindHost := flag.String("bind", ":8080", "set bind host")
-	prefork := flag.Bool("prefork", false, "use prefork")
-	child := flag.Bool("child", false, "is child proc")
-	jsonEncoder := flag.String("json_encoder", "none", "json encoder: none or easyjson or gojay or sjson")
-	dbDriver := flag.String("db", "none", "db connection driver [values: none or pgx or mongo]")
-	dbConnectionString := flag.String("db_connection_string",
-		"host=tfb-database user=benchmarkdbuser password=benchmarkdbpass dbname=hello_world sslmode=disable",
-		"db connection string")
-	flag.Parse()
+	if dbConnectionString == "" {
+		dbConnectionString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s pool_max_conns=%d", "tfb-database", 5432, "benchmarkdbuser", "benchmarkdbpass", "hello_world", maxConn)
+	}
 
 	// init database with appropriate driver
-	db, err := storage.InitDB(*dbDriver, *dbConnectionString, runtime.NumCPU()*4)
+	db, err := storage.InitDB(dbDriver, dbConnectionString, maxConn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if *child {
-		db, err = storage.InitDB(*dbDriver, *dbConnectionString, runtime.NumCPU())
-		if err != nil {
-			log.Fatal(err)
-		}
+
+	if db != nil {
+		defer db.Close()
 	}
 
 	// init json encoders
-	var jsonHandler func(ctx *atreugo.RequestCtx) error
-	var dbHandler func(ctx *atreugo.RequestCtx) error
-	var queriesHandler func(ctx *atreugo.RequestCtx) error
-	var updateHandler func(ctx *atreugo.RequestCtx) error
-	switch *jsonEncoder {
+	var jsonHandler atreugo.View
+	var dbHandler atreugo.View
+	var queriesHandler atreugo.View
+	var updateHandler atreugo.View
+
+	switch jsonEncoder {
 	case "easyjson":
 		jsonHandler = handlers.JSONHandlerEasyJSON
 		dbHandler = handlers.DBHandlerEasyJSON(db)
 		queriesHandler = handlers.QueriesHandlerEasyJSON(db)
 		updateHandler = handlers.UpdateHandlerEasyJSON(db)
-	case "gojay":
-		jsonHandler = handlers.JSONHandlerGoJay
-		dbHandler = handlers.DBHandlerGoJay(db)
-		queriesHandler = handlers.QueriesHandlerGoJay(db)
-		updateHandler = handlers.UpdateHandlerGoJay(db)
 	case "sjson":
 		jsonHandler = handlers.JSONHandlerSJson
 		dbHandler = handlers.DBHandlerSJson(db)
@@ -75,36 +81,33 @@ func main() {
 	}
 
 	// init atreugo server
-	server := atreugo.New(&atreugo.Config{
-		Compress: false,
+	server := atreugo.New(atreugo.Config{
+		Addr: bindHost,
+		Name: "Go",
 	})
 
 	// init handlers
-	server.Path("GET", "/plaintext", handlers.PlaintextHandler)
-	server.Path("GET", "/json", jsonHandler)
-	if db != nil {
-		defer db.Close()
-		server.Path("GET", "/fortune", handlers.FortuneHandlerPool(db))
-		server.Path("GET", "/fortune-quick", handlers.FortuneQuickHandlerPool(db))
-		server.Path("GET", "/db", dbHandler)
-		server.Path("GET", "/queries", queriesHandler)
-		server.Path("GET", "/update", updateHandler)
-	}
+	server.GET("/plaintext", handlers.PlaintextHandler)
+	server.GET("/json", jsonHandler)
+	server.GET("/db", dbHandler)
+	server.GET("/queries", queriesHandler)
+	server.GET("/fortune", handlers.FortuneHandler(db))
+	server.GET("/fortune-quick", handlers.FortuneQuickHandler(db))
+	server.GET("/update", updateHandler)
 
-	// check for prefork
-	var listener net.Listener
-	if *prefork {
-		listener, err = doPrefork(*child, *bindHost)
-		if err != nil {
-			log.Fatal(err)
+	if prefork {
+		preforkServer := &fastprefork.Prefork{
+			RecoverThreshold: runtime.GOMAXPROCS(0) / 2,
+			ServeFunc:        server.Serve,
 		}
+
+		if err := preforkServer.ListenAndServe(bindHost); err != nil {
+			panic(err)
+		}
+
 	} else {
-		listener, err = net.Listen("tcp4", *bindHost)
-		if err != nil {
-			log.Fatal(err)
+		if err := server.ListenAndServe(); err != nil {
+			panic(err)
 		}
-		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
-
-	log.Fatal(server.Serve(listener))
 }
